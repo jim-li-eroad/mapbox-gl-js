@@ -13,6 +13,7 @@ type FormattedSectionExpression = {
     text: Expression,
     scale: Expression | null;
     font: Expression | null;
+    id: Expression | null;
 }
 
 export default class FormatExpression implements Expression {
@@ -56,7 +57,13 @@ export default class FormatExpression implements Expression {
                 font = context.parse(options['text-font'], 1, array(StringType));
                 if (!font) return null;
             }
-            sections.push({text, scale, font});
+
+            let id = null;
+            if (options['id']) {
+                id = context.parse(options['id'], 1, StringType);
+                if (!id) return null;
+            }
+            sections.push({text, scale, font, id});
         }
 
         return new FormatExpression(sections);
@@ -68,7 +75,8 @@ export default class FormatExpression implements Expression {
                 new FormattedSection(
                     toString(section.text.evaluate(ctx)),
                     section.scale ? section.scale.evaluate(ctx) : null,
-                    section.font ? section.font.evaluate(ctx).join(',') : null
+                    section.font ? section.font.evaluate(ctx).join(',') : null,
+                    section.id ? section.id.evaluate(ctx) : null
                 )
             )
         );
@@ -82,6 +90,9 @@ export default class FormatExpression implements Expression {
             }
             if (section.font) {
                 fn(section.font);
+            }
+            if (section.id) {
+                fn(section.id);
             }
         }
     }
@@ -102,6 +113,9 @@ export default class FormatExpression implements Expression {
             }
             if (section.font) {
                 options['text-font'] = section.font.serialize();
+            }
+            if (section.id) {
+                options['id'] = section.id.serialize();
             }
             serialized.push(options);
         }

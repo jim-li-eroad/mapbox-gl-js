@@ -206,6 +206,11 @@ CompoundExpression.register(expressions, {
         [],
         (ctx) => ctx.globals.accumulated === undefined ? null : ctx.globals.accumulated
     ],
+    'text-section': [
+        ObjectType,
+        [],
+        (ctx) => ctx.formattedSection ? ctx.formattedSection : {}
+    ],
     '+': [
         NumberType,
         varargs(NumberType),

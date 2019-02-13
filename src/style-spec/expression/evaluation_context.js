@@ -3,6 +3,7 @@
 import { Color } from './values';
 
 import type { GlobalProperties, Feature, FeatureState } from './index';
+import { FormattedSection } from './types/formatted';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
@@ -10,6 +11,7 @@ class EvaluationContext {
     globals: GlobalProperties;
     feature: ?Feature;
     featureState: ?FeatureState;
+    formattedSection: ?FormattedSection;
 
     _parseColorCache: {[string]: ?Color};
 
@@ -17,6 +19,7 @@ class EvaluationContext {
         this.globals = (null: any);
         this.feature = null;
         this.featureState = null;
+        this.formattedSection = null;
         this._parseColorCache = {};
     }
 
