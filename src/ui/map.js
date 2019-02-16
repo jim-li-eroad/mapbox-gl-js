@@ -26,6 +26,7 @@ import { Event, ErrorEvent } from '../util/evented';
 import { MapMouseEvent } from './events';
 import TaskQueue from '../util/task_queue';
 import webpSupported from '../util/webp_supported';
+import Telemetry from '../util/telemetry';
 
 import type {PointLike} from '@mapbox/point-geometry';
 import type {LngLatLike} from '../geo/lng_lat';
@@ -93,7 +94,8 @@ type MapOptions = {
     pitch?: number,
     renderWorldCopies?: boolean,
     maxTileCacheSize?: number,
-    transformRequest?: RequestTransformFunction
+    transformRequest?: RequestTransformFunction,
+    collectFeatureTelemetry?: boolean
 };
 
 const defaultMinZoom = 0;
@@ -130,7 +132,8 @@ const defaultOptions = {
     maxTileCacheSize: null,
     transformRequest: null,
     fadeDuration: 300,
-    crossSourceCollisions: true
+    crossSourceCollisions: true,
+    collectFeatureTelemetry: true
 };
 
 /**
@@ -262,6 +265,7 @@ class Map extends Camera {
     _crossSourceCollisions: boolean;
     _crossFadingFactor: number;
     _collectResourceTiming: boolean;
+    _collectFeatureTelemetry: boolean;
     _renderTaskQueue: TaskQueue;
     _controls: Array<IControl>;
     _mapId: number;
@@ -324,9 +328,22 @@ class Map extends Camera {
         this._crossSourceCollisions = options.crossSourceCollisions;
         this._crossFadingFactor = 1;
         this._collectResourceTiming = options.collectResourceTiming;
+        this._collectFeatureTelemetry = options.collectFeatureTelemetry;
+        console.log('collectFeatureTelemetry', this._collectFeatureTelemetry);
         this._renderTaskQueue = new TaskQueue();
         this._controls = [];
         this._mapId = uniqueId();
+
+        if (this._collectFeatureTelemetry) {
+            this._telemetry = new Telemetry();
+            console.log('Telemetry', this._telemetry);
+            for (let i = 0; i < 25; i++) {
+              this._telemetry.push({
+                  id: i,
+                  name: `test event #${i}`
+                });
+            }
+        }
 
         const transformRequestFn = options.transformRequest;
         this._transformRequest = transformRequestFn ?
@@ -953,6 +970,8 @@ class Map extends Camera {
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
     setStyle(style: StyleSpecification | string | null, options?: {diff?: boolean} & StyleOptions) {
+        console.log('setStyle', style);
+        this._telemetry.push('setStyle', style);
         if ((!options || (options.diff !== false && !options.localIdeographFontFamily)) && this.style && style) {
             this._diffStyle(style, options);
             return this;
@@ -1049,6 +1068,7 @@ class Map extends Camera {
      * @see [Set a point after Geocoder result](https://www.mapbox.com/mapbox-gl-js/example/point-from-geocoder-result/)
      */
     addSource(id: string, source: SourceSpecification) {
+        console.log('addSource', id, source);
         this.style.addSource(id, source);
         return this._update(true);
     }

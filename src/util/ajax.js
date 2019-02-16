@@ -100,6 +100,18 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
         referrer: getReferrer(),
         signal: controller.signal
     });
+    if (requestParameters.method === 'POST') {
+      console.log('test', {
+          method: requestParameters.method || 'GET',
+          body: requestParameters.body,
+          credentials: requestParameters.credentials,
+          headers: requestParameters.headers,
+          referrer: getReferrer(),
+          signal: controller.signal
+      });
+      console.log('requestParameters', requestParameters);
+      console.log('request', request);
+    }
 
     if (requestParameters.type === 'json') {
         request.headers.set('Accept', 'application/json');
