@@ -2,6 +2,7 @@
 
 import { extend, bindAll } from '../util/util';
 import { postData } from '../util/ajax';
+import window from '../util/window';
 
 const defaultOptions = {
     flushAt: 20,
@@ -26,15 +27,24 @@ class Telemetry {
         ], this);
 
         this.options = extend(defaultOptions, options);
-        this._registry = [];
-        // if (this.options.flushAfter) {
-        //     this._timer = setInterval(this._flush, this.options.flushAfter);
-        //     console.log('timer set', this._timer);
-        // }
+        // on telemetry creation, we should check if anything is in localStorage
+        // we'll initialize anything left over from last session into the queue
+        // so that it can be uploaded to the API in the next flush event
+        this._registry = JSON.parse(window.localStorage.getItem('registry')) || [];
+        if (this.options.flushAfter) {
+            this._timer = setInterval(this._flush, this.options.flushAfter);
+            console.log('timer set', this._timer);
+        }
     }
 
-    push(event: string, payload: any) {
-        this._registry.push({event, payload});
+    push(name: string, payload: any) {
+        // we should provide a normalized interface for events
+        // the exact API for this is TBD once we know more about what data to collect
+        const event = {name, payload};
+        this._registry.push(event);
+        // write to local storage
+        // on unexpected connection loss or map remove, we should upload any events in the registry
+        window.localStorage.setItem('registry', JSON.stringify(this._registry));
         console.log('event added to _registry', this._registry);
         if (this._registry.length === this.options.flushAt) {
             this._flush();
@@ -54,6 +64,7 @@ class Telemetry {
             console.log('data', data);
           });
         }
+        window.localStorage.setItem('registry', '');
         console.log('_registry flushed', this._registry);
     }
 }
