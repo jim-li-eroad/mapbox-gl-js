@@ -30,7 +30,9 @@ class Telemetry {
         // on telemetry creation, we should check if anything is in localStorage
         // we'll initialize anything left over from last session into the queue
         // so that it can be uploaded to the API in the next flush event
-        this._registry = JSON.parse(window.localStorage.getItem('registry')) || [];
+        const localStorageRegistry = window.localStorage.getItem('registry');
+        console.log('localStorageRegistry', localStorageRegistry);
+        this._registry = localStorageRegistry ? JSON.parse(localStorageRegistry) : [];
         if (this.options.flushAfter) {
             this._timer = setInterval(this._flush, this.options.flushAfter);
             console.log('timer set', this._timer);
