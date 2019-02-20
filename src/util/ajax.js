@@ -91,6 +91,8 @@ export const getReferrer = isWorker() ?
     };
 
 function makeFetchRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+    console.log('makeFetchRequest-requestParameters', requestParameters);
+    console.log('makeFetchRequest-callback', callback);
     const controller = new window.AbortController();
     const request = new window.Request(requestParameters.url, {
         method: requestParameters.method || 'GET',
@@ -105,6 +107,9 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
         request.headers.set('Accept', 'application/json');
     }
 
+    console.log('makeFetchRequest-window', window);
+    console.log('makeFetchRequest-fetch', window.fetch);
+    console.log('makeFetchRequest-request', request);
     window.fetch(request).then(response => {
         if (response.ok) {
             response[requestParameters.type || 'text']().then(result => {
@@ -125,6 +130,8 @@ function makeFetchRequest(requestParameters: RequestParameters, callback: Respon
 }
 
 function makeXMLHttpRequest(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+    console.log('makeXMLHttpRequest-requestParameters', requestParameters);
+    console.log('makeXMLHttpRequest-callback', callback);
     const xhr: XMLHttpRequest = new window.XMLHttpRequest();
 
     xhr.open(requestParameters.method || 'GET', requestParameters.url, true);
@@ -158,10 +165,13 @@ function makeXMLHttpRequest(requestParameters: RequestParameters, callback: Resp
         }
     };
     xhr.send(requestParameters.body);
+    console.log('makeXMLHttpRequest-xhr', xhr);
     return { cancel: () => xhr.abort() };
 }
 
 export const makeRequest = function(requestParameters: RequestParameters, callback: ResponseCallback<any>): Cancelable {
+    console.log('makeRequest-requestParameters', requestParameters);
+    console.log('makeRequest-callback', callback);
     // We're trying to use the Fetch API if possible. However, in some situations we can't use it:
     // - IE11 doesn't support it at all. In this case, we dispatch the request to the main thread so
     //   that we can get an accruate referrer header.
